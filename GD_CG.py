@@ -1,4 +1,5 @@
 import numpy as np
+import Jacobi_GaussSeidel as JGS
 
 class Solver:
     def __init__(self, x0, A, b, max_iter, rtol, verbose=False):
@@ -27,21 +28,19 @@ class Solver:
     def Conjugate_Gradient(self):
         x0 = self.x0
         r = self.b - np.dot(A, x0)
-        d = -r
+        d = r
         for k in range(self.max_iter):
             z = np.dot(A, d)
             alpha = np.dot(r, d) / np.dot(d, z)
             x1 = x0 + alpha * d
-            print(r)
             r = r - alpha * z
-            print(r)
-            beta = np.dot(r, z) / np.dot(d, z)
-            d = -r + beta * d
             conv = np.linalg.norm(r)
             if conv < self.rtol:
                 print(conv)
                 break
             else:
+                beta = np.dot(r, z) / np.dot(d, z)
+                d = r + beta * d
                 x0 = x1
         return x0
 

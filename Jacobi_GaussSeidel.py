@@ -22,16 +22,15 @@ class Solver:
                 sum = 0
                 for j in range(self.n):
                     if j != i:
-                        sum += A[i, j]*x_k[j]
-                x_kp1[i] = 1/A[i,i] * (b[i] - sum)
-            # If verbose on
-            if self.verbose == True:
-                r_k_max = np.max(np.abs(b - np.dot(A, x_kp1)))
+                        sum += self.A[i, j]*x_k[j]
+                x_kp1[i] = 1/self.A[i,i] * (self.b[i] - sum)
+                r_k_max = np.max(np.abs(self.b - np.dot(self.A, x_kp1)))
                 if k == 1:
                     r_k_old = 1
                 r_k_maxrel = r_k_max / r_k_old
                 r_k_old = np.copy(r_k_max)
-                print(f"Iteration: {k}, x: {x_kp1}, r_max: {r_k_max}, rel_r: {r_k_maxrel}")
+                if self.verbose == True:
+                    print(f"Iteration: {k}, x: {x_kp1}, r_max: {r_k_max}, rel_r: {r_k_maxrel}")
             # Set x_k+1 to x_k for next iteration 
             x_k = np.copy(x_kp1)
             if r_k_max < self.xtol:
@@ -44,16 +43,16 @@ class Solver:
         for k in range(1, self.max_iter):
             x_kp1 = np.zeros(self.n)
             for i in range(self.n):
-                sum1 = np.dot(A[i, :i], x_kp1[:i])
-                sum2 = np.dot(A[i, i+1:], x_k[i+1:])
-                x_kp1[i] = 1/A[i, i] * (b[i] - sum1 - sum2)
-            if self.verbose == True:
-                r_k_max = np.max(np.abs(b - np.dot(A, x_kp1)))
+                sum1 = np.dot(self.A[i, :i], x_kp1[:i])
+                sum2 = np.dot(self.A[i, i+1:], x_k[i+1:])
+                x_kp1[i] = 1/self.A[i, i] * (self.b[i] - sum1 - sum2)
+                r_k_max = np.max(np.abs(self.b - np.dot(self.A, x_kp1)))
                 if k == 1:
                     r_k_old = 1
                 r_k_maxrel = r_k_max / r_k_old
                 r_k_old = np.copy(r_k_max)
-                print(f"Iteration: {k}, x: {x_kp1}, r_max: {r_k_max}, rel_r: {r_k_maxrel}")
+                if self.verbose == True:
+                    print(f"Iteration: {k}, x: {x_kp1}, r_max: {r_k_max}, rel_r: {r_k_maxrel}")
             x_k = np.copy(x_kp1)
             if r_k_max < self.xtol:
                 break
@@ -67,8 +66,8 @@ class Solver:
                 s = 0
                 for j in range(self.n):
                     if j != i:
-                        s += A[i, j] * x_k[j]
-                x_k[i] = (1 - self.w) * x_k[i] + (self.w/A[i,i]) * (b[i] - s)
+                        s += self.A[i, j] * x_k[j]
+                x_k[i] = (1 - self.w) * x_k[i] + (self.w/self.A[i,i]) * (self.b[i] - s)
             if self.verbose == True:
              ek_max = np.max(np.abs(self.x - x_k))
             if k == 1:

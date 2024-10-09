@@ -11,6 +11,7 @@ class Solver:
         self.verbose = verbose
 
     def Gradient_Descent(self):
+        print('Gradient Descent is used')
         x0 = self.x0
         r = self.b - np.dot(self.A, x0)
         for k in range(self.max_iter):
@@ -18,14 +19,18 @@ class Solver:
             x1 = x0 + alpha * r
             r = self.b - self.A @ x1
             conv = np.linalg.norm(r)
+            if self.verbose == True:
+                print(f"Iteration {k}: r= {conv:.5f}, x= {x1}")
             if conv < self.rtol:
-                print(conv)
                 break
+            elif k == self.max_iter-1:
+                print("Max Iterations Reached.")
             else:
                 x0 = x1
         return x0
     
     def Conjugate_Gradient(self):
+        print('Conjugate Gradient is used.')
         x0 = self.x0
         r = self.b - np.dot(A, x0)
         d = r
@@ -35,9 +40,12 @@ class Solver:
             x1 = x0 + alpha * d
             r = r - alpha * z
             conv = np.linalg.norm(r)
+            if self.verbose == True:
+                print(f"Iteration {k}: r= {conv}, x= {x1}")
             if conv < self.rtol:
-                print(conv)
                 break
+            elif k == self.max_iter-1:
+                print("Max Iterations Reached.")
             else:
                 beta = np.dot(r, z) / np.dot(d, z)
                 d = r + beta * d
@@ -52,9 +60,14 @@ if __name__ == '__main__':
                   [4, -3, -5, -1, 15]])
     b = np.array([12, -27, 14, -17, 12])
     x0 = np.array([0, 0, 0, 0, 0])
-    max_iter, rtol = 100, 1e-8
-    Sol = Solver(x0, A, b, max_iter, rtol)
+    max_iter, rtol = 100, 1e-6
+    Sol = Solver(x0, A, b, max_iter, rtol, False)
     x_sol = Sol.Gradient_Descent()
-    print(x_sol)
+    print(f"The solution using Gradient Descent is: {x_sol}\n")
     x_sol = Sol.Conjugate_Gradient()
-    print(x_sol)     
+    print(f"The solution using Conjugate Gradient is: {x_sol}")     
+    Sol = JGS.Solver(A, b, max_iter, rtol, False)
+    x_sol = Sol.Jacobi()
+    print(f"The solution using Jacobi Method is: {x_sol}")
+    x_sol = Sol.Gauss_Seidel()
+    print(f"The solution using Gauss Seidel is: {x_sol}")

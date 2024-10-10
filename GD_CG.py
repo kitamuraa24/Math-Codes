@@ -71,32 +71,32 @@ def build_b(A):
     return b
 
 if __name__ == '__main__':
-    N = [16, 32]
-    for n in N:
-        A = build_A(n)
-        b = build_b(A)
-        x0 = np.zeros(n)
-        Sol = Solver(x0, A, b, 7000, 1e-6, False)
-        x_sol = Sol.Gradient_Descent()
-        print(f"For {n}, the solution using Gradient Descent is: {x_sol}\n")
-        x_sol = Sol.Conjugate_Gradient()
-        print(f"For {n}, the solution using Conjugate Gradient is: {x_sol}\n")   
+    # N = [16, 32]
+    # for n in N:
+    #     A = build_A(n)
+    #     b = build_b(A)
+    #     x0 = np.zeros(n)
+    #     Sol = Solver(x0, A, b, 7000, 1e-6, False)
+    #     x_sol = Sol.Gradient_Descent()
+    #     print(f"For {n}, the solution using Gradient Descent is: {x_sol}\n")
+    #     x_sol = Sol.Conjugate_Gradient()
+    #     print(f"For {n}, the solution using Conjugate Gradient is: {x_sol}\n")   
 
-    # A = np.array([[10, 1, 2, 3, 4],
-    #               [1, 9, -1, 2, -3],
-    #               [2, -1, 7, 3, -5],
-    #               [3, 2, 3, 12, -1],
-    #               [4, -3, -5, -1, 15]])
-    # b = np.array([12, -27, 14, -17, 12])
-    # x0 = np.array([0, 0, 0, 0, 0])
-    # max_iter, rtol = 100, 1e-6
-    # Sol = Solver(x0, A, b, max_iter, rtol, True)
-    # x_sol = Sol.Gradient_Descent()
-    # print(f"The solution using Gradient Descent is: {x_sol}\n")
-    # x_sol = Sol.Conjugate_Gradient()
-    # print(f"The solution using Conjugate Gradient is: {x_sol}")     
-    # Sol = JGS.Solver(A, b, max_iter, rtol, False)
-    # x_sol = Sol.Jacobi()
-    # print(f"The solution using Jacobi Method is: {x_sol}")
-    # x_sol = Sol.Gauss_Seidel()
-    # print(f"The solution using Gauss Seidel is: {x_sol}")
+    A = np.array([[10, 1, 2, 3, 4],
+                  [1, 9, -1, 2, -3],
+                  [2, -1, 7, 3, -5],
+                  [3, 2, 3, 12, -1],
+                  [4, -3, -5, -1, 15]])
+    b = np.array([12, -27, 14, -17, 12])
+    x0 = np.array([0, 0, 0, 0, 0])
+    max_iter, rtol = 100, 1e-6
+    Sol = Solver(x0, A, b, max_iter, rtol, True)
+    x_sol = Sol.Gradient_Descent()
+    print(f"The solution using Gradient Descent is: {x_sol}\n")
+    x_sol = Sol.Conjugate_Gradient()
+    print(f"The solution using Conjugate Gradient is: {x_sol}")     
+    Sol = JGS.Solver(A, b, max_iter, rtol, False)
+    x_sol = Sol.Jacobi()
+    print(f"The solution using Jacobi Method is: {x_sol}")
+    x_sol = Sol.Gauss_Seidel()
+    print(f"The solution using Gauss Seidel is: {x_sol}")

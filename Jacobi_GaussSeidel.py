@@ -24,16 +24,17 @@ class Solver:
                     if j != i:
                         sum += self.A[i, j]*x_k[j]
                 x_kp1[i] = 1/self.A[i,i] * (self.b[i] - sum)
-                r_k_max = np.max(np.abs(self.b - np.dot(self.A, x_kp1)))
+                r_k = np.linalg.norm(self.b - np.dot(self.A, x_kp1))
                 if k == 1:
                     r_k_old = 1
-                r_k_maxrel = r_k_max / r_k_old
-                r_k_old = np.copy(r_k_max)
+                r_k_rel = r_k / r_k_old
+                r_k_old = np.copy(r_k)
                 if self.verbose == True:
-                    print(f"Iteration: {k}, x: {x_kp1}, r_max: {r_k_max}, rel_r: {r_k_maxrel}")
+                    print(f"Iteration: {k}, x: {x_kp1}, r_k: {r_k}, rel_r: {r_k_rel}")
             # Set x_k+1 to x_k for next iteration 
             x_k = np.copy(x_kp1)
-            if r_k_max < self.xtol:
+            if r_k < self.xtol:
+                print(f"Total Iterations: {k}")
                 break   
         return x_k
     
@@ -46,15 +47,16 @@ class Solver:
                 sum1 = np.dot(self.A[i, :i], x_kp1[:i])
                 sum2 = np.dot(self.A[i, i+1:], x_k[i+1:])
                 x_kp1[i] = 1/self.A[i, i] * (self.b[i] - sum1 - sum2)
-                r_k_max = np.max(np.abs(self.b - np.dot(self.A, x_kp1)))
+                r_k = np.linalg.norm(self.b - np.dot(self.A, x_kp1))
                 if k == 1:
                     r_k_old = 1
-                r_k_maxrel = r_k_max / r_k_old
-                r_k_old = np.copy(r_k_max)
+                r_k_rel = r_k / r_k_old
+                r_k_old = np.copy(r_k)
                 if self.verbose == True:
-                    print(f"Iteration: {k}, x: {x_kp1}, r_max: {r_k_max}, rel_r: {r_k_maxrel}")
+                    print(f"Iteration: {k}, x: {x_kp1}, r_max: {r_k}, rel_r: {r_k_rel}")
             x_k = np.copy(x_kp1)
-            if r_k_max < self.xtol:
+            if r_k < self.xtol:
+                print(f"Total Iterations: {k}")
                 break
         return x_k
     

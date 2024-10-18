@@ -66,7 +66,7 @@ class Riemann_Solver:
         return u_old
     
     def NT(self):
-        #TO DO: Fix the boundary conditions: can't just copy 
+        #TO DO: Fix the Left sweeping (odd k)
         u_old = self.u0
         u_new = np.copy(u_old)
         t, k = 0, 0
@@ -83,8 +83,8 @@ class Riemann_Solver:
                     dt = self.t_end - t
                 else: dt = 0
             t+=dt
-            if k % 2 == 0:
-                for i in range(len(self.u0)-1):
+            if k % 2 == 0: #even k
+                for i in range(len(self.u0)):
                     if i == 0:
                         du_ip1 = u_old[i+1] - u_old[i]
                         du_i = u_old[i] - u_old[-1]
@@ -99,6 +99,13 @@ class Riemann_Solver:
                         df_ip1 = f(u_old[i+1]) - f(u_old[i])
                         df_i = f(u_old[i]) - f(u_old[i-1])
                         df_ip2 = f(u_old[0])- f(u_old[i+1])
+                    elif i == len(self.u0) - 1:
+                        du_ip1 = u_old[0] - u_old[i]
+                        du_i = u_old[i] - u_old[i-1]
+                        du_ip2 = u_old[1] - u_old[0]
+                        df_ip1 = f(u_old[0]) - f(u_old[i])
+                        df_i = f(u_old[i]) - f(u_old[i-1])
+                        df_ip2 = f(u_old[1])- f(u_old[0])
                     else:
                         du_ip1 = u_old[i+1] - u_old[i]
                         du_i = u_old[i] - u_old[i-1]
@@ -111,13 +118,17 @@ class Riemann_Solver:
                     fp_i = self.minmod(df_ip1, df_i)
                     fp_ip1 = self.minmod(df_ip2, df_ip1)
                     u_i_half = u_old[i] - 0.5 * dt/h * fp_i
-                    u_ip1_half = u_old[i+1] -0.5 * dt/h *fp_ip1
-                    u_new[i] = 0.5 * (u_old[i] + u_old[i+1]) + 0.125 * (upi - up_ip1) \
+                    if i == len(self.u0) - 1:
+                        u_ip1_half = u_old[0] -0.5 * dt/h *fp_ip1
+                        u_new[i] = 0.5 * (u_old[i] + u_old[0]) + 0.125 * (upi - up_ip1) \
                                 - dt/h *(f(u_ip1_half) - f(u_i_half))
-                u_new[-1] = u_new[0]
-            else:
-                for i in range(len(self.u0), 1):
-                    if i == len(self.u0) -1:
+                    else:
+                        u_ip1_half = u_old[i+1] -0.5 * dt/h *fp_ip1
+                        u_new[i] = 0.5 * (u_old[i] + u_old[i+1]) + 0.125 * (upi - up_ip1) \
+                                - dt/h *(f(u_ip1_half) - f(u_i_half))                        
+            else: #odd k
+                for i in range(len(self.u0) -1, 0, -1):
+                    if i == len(self.u0) - 1:
                         du_ip1 = u_old[0] - u_old[i]
                         du_i = u_old[i] - u_old[i-1]
                         du_ip2 = u_old[1] - u_old[0]
@@ -131,6 +142,13 @@ class Riemann_Solver:
                         df_ip1 = f(u_old[-1]) - f(u_old[i])
                         df_i = f(u_old[i]) - f(u_old[i-1])
                         df_ip2 = f(u_old[0])- f(u_old[-1])
+                    elif i == 0:
+                        du_ip1 = u_old[i+1] - u_old[i]
+                        du_i = u_old[i] - u_old[-1]
+                        du_ip2 = u_old[i+2] - u_old[i+1]
+                        df_ip1 = f(u_old[i+1]) - f(u_old[i]) 
+                        df_i = f(u_old[i]) - f(u_old[-1])
+                        df_ip2 = f(u_old[i+2])- f(u_old[i+1])
                     else:
                         du_ip1 = u_old[i+1] - u_old[i]
                         du_i = u_old[i] - u_old[i-1]
@@ -143,10 +161,14 @@ class Riemann_Solver:
                     fp_i = self.minmod(df_ip1, df_i)
                     fp_ip1 = self.minmod(df_ip2, df_ip1)
                     u_i_half = u_old[i] - 0.5 * dt/h * fp_i
-                    u_ip1_half = u_old[i+1] -0.5 * dt/h *fp_ip1
-                    u_new[i] = 0.5 * (u_old[i] + u_old[i+1]) + 0.125 * (upi - up_ip1) \
+                    if i == len(self.u0) -1:
+                        u_ip1_half = u_old[0] -0.5 * dt/h *fp_ip1
+                        u_new[i] = 0.5 * (u_old[i] + u_old[0]) + 0.125 * (upi - up_ip1) \
                                 - dt/h *(f(u_ip1_half) - f(u_i_half))
-                u_new[0] = u_new[-1]
+                    else:
+                        u_ip1_half = u_old[i+1] -0.5 * dt/h *fp_ip1
+                        u_new[i] = 0.5 * (u_old[i] + u_old[i+1]) + 0.125 * (upi - up_ip1) \
+                                - dt/h *(f(u_ip1_half) - f(u_i_half))
             k+=1
             u_old = np.copy(u_new)
             if self.verbose == True:

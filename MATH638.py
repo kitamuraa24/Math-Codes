@@ -44,8 +44,8 @@ if __name__=="__main__":
             u0 = flux_types[flux]
         except:
             "Flux type not supported"
-        params = [u0, t_end[0], CFL, h, xb, flux]
-        Solver = RS.Riemann_Solver(params, verbose=True)
+        params = [u0, t_end[2], CFL, h, xb, flux]
+        Solver = RS.Riemann_Solver(params, verbose=False)
         u1 = Solver.LxF()
         u2 = Solver.NT()
         plt.figure(1)

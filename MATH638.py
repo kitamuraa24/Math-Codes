@@ -27,15 +27,12 @@ def buckleyLeverett_u0(N):
     return u0
 
 if __name__=="__main__":
-    N = 200
-    h = 4/200
-    x = np.linspace(-1.99, 1.99, N)
+    N = 400
+    h = 4/N
+    x = np.linspace(-2 + h, 2 - h, N)
     CFL = 0.3
     t_end = [0.5, 2, 20]
-    u0 = linear_u0(N)
     xb = [-2, 2]
-    #u0 = burgers_u0(N, x)
-    #u0 = buckleyLeverett_u0(N)
     flux_types = {'Linear': linear_u0(N), 
                   'Burgers': burgers_u0(N, x),
                 'Buckley_Leverett': buckleyLeverett_u0(N)}

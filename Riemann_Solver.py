@@ -31,6 +31,7 @@ class Riemann_Solver:
             return max(a, b)
         elif a*b < 0:
             return 0
+        else: print("Error")
 
     def LxF(self):
         u_old = self.u0
@@ -41,7 +42,7 @@ class Riemann_Solver:
         except:
             "Flux not supported!"
         while t < self.t_end:
-            u_max = np.max(self.u0)
+            u_max = np.max(np.abs(self.u0))
             dt = self.CFL * self.h / u_max
             if t + dt > self.t_end:
                 if k % 2 != 0:
@@ -76,7 +77,7 @@ class Riemann_Solver:
         except:
             "Flux not supported!"
         while t < self.t_end:
-            u_max = np.max(self.u0)
+            u_max = np.max(np.abs(self.u0))
             dt = self.CFL * self.h / u_max
             if t + dt > self.t_end:
                 if k % 2 != 0:
@@ -114,6 +115,7 @@ class Riemann_Solver:
                         df_i = f(u_old[i]) - f(u_old[i-1])
                         df_ip2 = f(u_old[i+2]) - f(u_old[i+1])
                     upi = self.minmod(du_ip1, du_i)
+                    print(du_ip2, du_ip1)
                     up_ip1 = self.minmod(du_ip2, du_ip1)
                     fp_i = self.minmod(df_ip1, df_i)
                     fp_ip1 = self.minmod(df_ip2, df_ip1)

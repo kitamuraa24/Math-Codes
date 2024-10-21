@@ -31,6 +31,7 @@ class Riemann_Solver:
             return 0
 
     def LxF(self):
+        print("Lax-Friedrich scheme is used\n")
         u_old = self.u0
         u_new = np.copy(u_old)
         h = self.h
@@ -53,14 +54,12 @@ class Riemann_Solver:
                     df = (f(u_old[i+1]) - f(u_old[i]))
                     du = (u_old[i+1] + u_old[i])
                     u_new[i] =  0.5 * du - dt/self.h * df
-                    #print(self.flux, df)
-                u_new[0] = u_new[-1]
+                u_new[-1] = u_new[0]
             else:
-                for i in range(len(self.u0)-1, 1, -1):
+                for i in range(len(self.u0)-1, 0, -1):
                     df = (f(u_old[i]) - f(u_old[i-1]))
                     du = u_old[i-1] + u_old[i]
                     u_new[i] = 0.5 * du -  dt/self.h * df
-                    #print(self.flux, df)
                 u_new[0] = u_new[-1]
             k+=1
             u_old = np.copy(u_new)
@@ -69,7 +68,7 @@ class Riemann_Solver:
         return u_old
     
     def NT(self):
-        #TO DO: Fix the Left sweeping (odd k)
+        print("Nessyahu-Tadmor Scheme is used\n")
         u_old = self.u0
         u_new = np.copy(u_old)
         t, k = 0, 0
@@ -177,5 +176,5 @@ class Riemann_Solver:
             k+=1
             u_old = np.copy(u_new)
             if self.verbose == True:
-                print(f"Time Iter No: {k} | dt: {dt:.3f} | time: {t:.3f}")
+                print(f"Time Iter No: {k} | dt: {dt:.6f} | time: {t:.6f}")
         return u_old

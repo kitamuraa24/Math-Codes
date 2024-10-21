@@ -13,8 +13,6 @@ class Riemann_Solver:
         self.flux_types = {"Linear": self.Linear,
                            "Burgers": self.Burgers,
                            "Buckley_Leverett": self.Buckley_Leverett}
-        
-
     def Linear(self, u):
         return u
     
@@ -29,21 +27,21 @@ class Riemann_Solver:
             return min(a, b)
         elif a <= 0 and b <= 0:
             return max(a, b)
-        elif a*b < 0:
+        else:
             return 0
-        else: print("Error")
 
     def LxF(self):
         u_old = self.u0
         u_new = np.copy(u_old)
+        h = self.h
         t, k = 0, 0
-        try:
-            f = self.flux_types[self.flux]
-        except:
-            "Flux not supported!"
+         # Select the appropriate flux function
+        f = self.flux_types.get(self.flux)
+        if f is None:
+            raise ValueError("Flux not supported!")
         while t < self.t_end:
-            u_max = np.max(np.abs(self.u0))
-            dt = self.CFL * self.h / u_max
+            u_max = np.max(np.abs(u_old))
+            dt = self.CFL * h / u_max 
             if t + dt > self.t_end:
                 if k % 2 != 0:
                     dt = self.t_end - t
@@ -51,19 +49,23 @@ class Riemann_Solver:
                     dt = 0
             t+=dt
             if k % 2 == 0:
-                for i in range(len(self.u0)-1):
-                    u_new[i] = 0.5 * (u_old[i] + u_old[i+1]) 
-                    - dt/self.h * (f(u_old[i+1]) -f(u_old[i]))
-                u_new[-1] = u_new[0]
+                for i in range(len(self.u0)-2):
+                    df = (f(u_old[i+1]) - f(u_old[i]))
+                    du = (u_old[i+1] + u_old[i])
+                    u_new[i] =  0.5 * du - dt/self.h * df
+                    #print(self.flux, df)
+                u_new[0] = u_new[-1]
             else:
-                for i in range(len(self.u0), 1):
-                    u_new[i] = 0.5 * (u_old[i-1] + u_old[i])
-                    - dt/self.h * (f(u_old[i]) - f(u_old[i-1]))
+                for i in range(len(self.u0)-1, 1, -1):
+                    df = (f(u_old[i]) - f(u_old[i-1]))
+                    du = u_old[i-1] + u_old[i]
+                    u_new[i] = 0.5 * du -  dt/self.h * df
+                    #print(self.flux, df)
                 u_new[0] = u_new[-1]
             k+=1
             u_old = np.copy(u_new)
             if self.verbose == True:
-                print(f"Time Iter No: {k} | dt: {dt:.3f} | time: {t:.3f}")
+                print(f"Time Iter No: {k} | dt: {dt:.6f} | time: {t:.6f}")
         return u_old
     
     def NT(self):
@@ -72,13 +74,12 @@ class Riemann_Solver:
         u_new = np.copy(u_old)
         t, k = 0, 0
         h = self.h
-        try:
-            f = self.flux_types[self.flux]
-        except:
-            "Flux not supported!"
+        f = self.flux_types.get(self.flux)
+        if f is None:
+            raise ValueError("Flux not supported!")
         while t < self.t_end:
-            u_max = np.max(np.abs(self.u0))
-            dt = self.CFL * self.h / u_max
+            u_max = np.max(np.abs(u_old))
+            dt = self.CFL * h / u_max
             if t + dt > self.t_end:
                 if k % 2 != 0:
                     dt = self.t_end - t
@@ -87,38 +88,39 @@ class Riemann_Solver:
             if k % 2 == 0: #even k
                 for i in range(len(self.u0)):
                     if i == 0:
+                        du_ip2 = u_old[i+2] - u_old[i+1]
                         du_ip1 = u_old[i+1] - u_old[i]
                         du_i = u_old[i] - u_old[-1]
-                        du_ip2 = u_old[i+2] - u_old[i+1]
+                        df_ip2 = f(u_old[i+2])- f(u_old[i+1])
                         df_ip1 = f(u_old[i+1]) - f(u_old[i]) 
                         df_i = f(u_old[i]) - f(u_old[-1])
-                        df_ip2 = f(u_old[i+2])- f(u_old[i+1])
                     elif i == len(self.u0)-2:
+                        du_ip2 = u_old[0] - u_old[i+1]
                         du_ip1 = u_old[i+1] - u_old[i]
                         du_i = u_old[i] - u_old[i-1]
-                        du_ip2 = u_old[0] - u_old[i+1]
+                        df_ip2 = f(u_old[0])- f(u_old[i+1])
                         df_ip1 = f(u_old[i+1]) - f(u_old[i])
                         df_i = f(u_old[i]) - f(u_old[i-1])
-                        df_ip2 = f(u_old[0])- f(u_old[i+1])
                     elif i == len(self.u0) - 1:
+                        du_ip2 = u_old[1] - u_old[0]
                         du_ip1 = u_old[0] - u_old[i]
                         du_i = u_old[i] - u_old[i-1]
-                        du_ip2 = u_old[1] - u_old[0]
+                        df_ip2 = f(u_old[1])- f(u_old[0])
                         df_ip1 = f(u_old[0]) - f(u_old[i])
                         df_i = f(u_old[i]) - f(u_old[i-1])
-                        df_ip2 = f(u_old[1])- f(u_old[0])
                     else:
+                        du_ip2 = u_old[i+2] - u_old[i+1]
                         du_ip1 = u_old[i+1] - u_old[i]
                         du_i = u_old[i] - u_old[i-1]
-                        du_ip2 = u_old[i+2] - u_old[i+1]
+                        df_ip2 = f(u_old[i+2]) - f(u_old[i+1])
                         df_ip1 = f(u_old[i+1]) - f(u_old[i])
                         df_i = f(u_old[i]) - f(u_old[i-1])
-                        df_ip2 = f(u_old[i+2]) - f(u_old[i+1])
                     upi = self.minmod(du_ip1, du_i)
-                    print(du_ip2, du_ip1)
                     up_ip1 = self.minmod(du_ip2, du_ip1)
                     fp_i = self.minmod(df_ip1, df_i)
                     fp_ip1 = self.minmod(df_ip2, df_ip1)
+                    u_i_half = u_old[i] - 0.5 * dt/h * fp_i
+                    # upi, up_ip1, fp_i, fp_ip1 = 0, 0, 0, 0
                     u_i_half = u_old[i] - 0.5 * dt/h * fp_i
                     if i == len(self.u0) - 1:
                         u_ip1_half = u_old[0] -0.5 * dt/h *fp_ip1
@@ -127,9 +129,9 @@ class Riemann_Solver:
                     else:
                         u_ip1_half = u_old[i+1] -0.5 * dt/h *fp_ip1
                         u_new[i] = 0.5 * (u_old[i] + u_old[i+1]) + 0.125 * (upi - up_ip1) \
-                                - dt/h *(f(u_ip1_half) - f(u_i_half))                        
+                                - dt/h *(f(u_ip1_half) - f(u_i_half))                   
             else: #odd k
-                for i in range(len(self.u0) -1, 0, -1):
+                for i in range(len(self.u0) -1, -1, -1):
                     if i == len(self.u0) - 1:
                         du_ip1 = u_old[0] - u_old[i]
                         du_i = u_old[i] - u_old[i-1]
@@ -162,14 +164,19 @@ class Riemann_Solver:
                     up_ip1 = self.minmod(du_ip2, du_ip1)
                     fp_i = self.minmod(df_ip1, df_i)
                     fp_ip1 = self.minmod(df_ip2, df_ip1)
-                    u_i_half = u_old[i] - 0.5 * dt/h * fp_i
-                    if i == len(self.u0) -1:
-                        u_ip1_half = u_old[0] -0.5 * dt/h *fp_ip1
-                        u_new[i] = 0.5 * (u_old[i] + u_old[0]) + 0.125 * (upi - up_ip1) \
+                    # upi, up_ip1, fp_i, fp_ip1 = 0, 0, 0, 0
+                    u_ip1_half = u_old[i] -0.5 * dt/h *fp_ip1
+                    if i == 0:
+                        u_i_half = u_old[-1] -0.5 * dt/h *fp_ip1
+                        u_new[i] = 0.5 * (u_old[-1] + u_old[i]) + 0.125 * (upi - up_ip1) \
+                                - dt/h *(f(u_ip1_half) - f(u_i_half))
+                    elif i == len(u_old) - 1:
+                        u_i_half = u_old[i-1] - 0.5 * dt/h * fp_i
+                        u_new[i] = 0.5 * (u_old[i] + u_old[i-1]) + 0.125 * (upi - up_ip1) \
                                 - dt/h *(f(u_ip1_half) - f(u_i_half))
                     else:
-                        u_ip1_half = u_old[i+1] -0.5 * dt/h *fp_ip1
-                        u_new[i] = 0.5 * (u_old[i] + u_old[i+1]) + 0.125 * (upi - up_ip1) \
+                        u_i_half = u_old[i-1] - 0.5 * dt/h * fp_i
+                        u_new[i] = 0.5 * (u_old[i] + u_old[i-1]) + 0.125 * (upi - up_ip1) \
                                 - dt/h *(f(u_ip1_half) - f(u_i_half))
             k+=1
             u_old = np.copy(u_new)

@@ -26,32 +26,55 @@ def buckleyLeverett_u0(N):
     u0[int(N/2):] = 0
     return u0
 
+def trial(N):
+    u0 = np.zeros(N)
+    u0[int(N/4):int(N/2)] = 1
+    return u0
+
 if __name__=="__main__":
-    N = 400
-    h = 4/N
-    x = np.linspace(-2 + h, 2 - h, N)
+    N = 200
+    h = 4/(N-1)
     CFL = 0.3
     t_end = [0.5, 2, 20]
     xb = [-2, 2]
+    x = np.linspace(xb[0] +h/2, xb[1] - h/2, N)
     flux_types = {'Linear': linear_u0(N), 
                   'Burgers': burgers_u0(N, x),
                 'Buckley_Leverett': buckleyLeverett_u0(N)}
-    for flux in flux_types:
-        try:
-            u0 = flux_types[flux]
-        except:
-            "Flux type not supported"
-        params = [u0, t_end[2], CFL, h, xb, flux]
-        Solver = RS.Riemann_Solver(params, verbose=False)
-        u1 = Solver.LxF()
-        u2 = Solver.NT()
-        plt.figure(1)
-        plt.title(f"{flux}")
-        plt.grid(True)
-        plt.ylabel("u")
-        plt.xlabel("x")
-        plt.plot(x, u1, label = 'LxF')
-        plt.plot(x, u2, label='NT')
-        plt.legend()
-        plt.show()
-        
+    # for flux in flux_types:
+    #     try:
+    #         u0 = flux_types[flux]
+    #     except:
+    #         "Flux type not supported"
+    #     for t in t_end:
+    #         params = [u0, t, CFL, h, xb, flux]
+    #         Solver = RS.Riemann_Solver(params, verbose=False)
+    #         u1 = Solver.LxF()
+    #         u2 = Solver.NT()
+    #         plt.figure(1)
+    #         plt.title(f"{flux} at time {t} s")
+    #         plt.grid(True)
+    #         plt.ylabel("u")
+    #         plt.xlabel("x")
+    #         plt.plot(x, u0, label='Initial')
+    #         plt.plot(x, u1, label = 'LxF')
+    #         plt.plot(x, u2, label='NT')
+    #         plt.legend()
+    #         plt.show()
+    u0 = trial(N)
+    flux = "Linear"
+    t = 1
+    params = [u0, t, CFL, h, xb, flux]
+    Solver = RS.Riemann_Solver(params, verbose=True)
+    u1 = Solver.NT()
+    #u2 = Solver.NT()
+    plt.figure(1)
+    plt.title(f"{flux} at time {t} s")
+    plt.grid(True)
+    plt.ylabel("u")
+    plt.xlabel("x")
+    plt.plot(x, u0, label='Initial')
+    plt.plot(x, u1, label = flux)
+    #plt.plot(x, u2, label='NT')
+    plt.legend()
+    plt.show()   

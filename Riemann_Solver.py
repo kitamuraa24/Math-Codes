@@ -133,33 +133,33 @@ class Riemann_Solver:
             else: #odd k
                 for i in range(len(self.u0) -1, -1, -1):
                     if i == len(self.u0) - 1:
-                        du_ip1 = u_old[0] - u_old[i]
-                        du_i = u_old[i] - u_old[i-1]
-                        du_ip2 = u_old[1] - u_old[0]
-                        df_ip1 = f(u_old[0]) - f(u_old[i])
-                        df_i = f(u_old[i]) - f(u_old[i-1])
-                        df_ip2 = f(u_old[1])- f(u_old[0])
-                    elif i == len(self.u0) - 2:
-                        du_ip1 = u_old[-1] - u_old[i]
-                        du_i = u_old[i] - u_old[i-1]
-                        du_ip2 = u_old[0] - u_old[-1]
-                        df_ip1 = f(u_old[-1]) - f(u_old[i])
-                        df_i = f(u_old[i]) - f(u_old[i-1])
-                        df_ip2 = f(u_old[0])- f(u_old[-1])
+                        du_ip2 = u_old[0] - u_old[i]
+                        du_ip1 = u_old[i] - u_old[i-1]
+                        du_i = u_old[i-1] - u_old[i-2]
+                        df_ip2 = f(u_old[0])- f(u_old[i])
+                        df_ip1 = f(u_old[i]) - f(u_old[i-1])
+                        df_i = f(u_old[i-1]) - f(u_old[i-2])
                     elif i == 0:
-                        du_ip1 = u_old[i+1] - u_old[i]
-                        du_i = u_old[i] - u_old[-1]
-                        du_ip2 = u_old[i+2] - u_old[i+1]
-                        df_ip1 = f(u_old[i+1]) - f(u_old[i]) 
-                        df_i = f(u_old[i]) - f(u_old[-1])
-                        df_ip2 = f(u_old[i+2])- f(u_old[i+1])
+                        du_ip2 = u_old[i+1] - u_old[i]
+                        du_ip1 = u_old[i] - u_old[-1]
+                        du_i = u_old[-1] - u_old[-2]
+                        df_ip2 = f(u_old[i+1])- f(u_old[i])
+                        df_ip1 = f(u_old[i]) - f(u_old[-1]) 
+                        df_i = f(u_old[-1]) - f(u_old[-2])
+                    elif i == 1:
+                        du_ip2 = u_old[i+1] - u_old[i]
+                        du_ip1 = u_old[i] - u_old[i-1]
+                        du_i = u_old[i-1] - u_old[-1]
+                        df_ip2 = f(u_old[i+1])- f(u_old[i])
+                        df_ip1 = f(u_old[i]) - f(u_old[i-1]) 
+                        df_i = f(u_old[i-1]) - f(u_old[-1])
                     else:
-                        du_ip1 = u_old[i+1] - u_old[i]
-                        du_i = u_old[i] - u_old[i-1]
-                        du_ip2 = u_old[i+2] - u_old[i+1]
-                        df_ip1 = f(u_old[i+1]) - f(u_old[i])
-                        df_i = f(u_old[i]) - f(u_old[i-1])
-                        df_ip2 = f(u_old[i+2]) - f(u_old[i+1])
+                        du_ip2 = u_old[i+1] - u_old[i]
+                        du_ip1 = u_old[i] - u_old[i-1]
+                        du_i = u_old[i-1] - u_old[i-2]
+                        df_ip2 = f(u_old[i+1]) - f(u_old[i])
+                        df_ip1 = f(u_old[i]) - f(u_old[i-1])
+                        df_i = f(u_old[i-1]) - f(u_old[i-2])
                     upi = self.minmod(du_ip1, du_i)
                     up_ip1 = self.minmod(du_ip2, du_ip1)
                     fp_i = self.minmod(df_ip1, df_i)
@@ -169,10 +169,6 @@ class Riemann_Solver:
                     if i == 0:
                         u_i_half = u_old[-1] -0.5 * dt/h *fp_ip1
                         u_new[i] = 0.5 * (u_old[-1] + u_old[i]) + 0.125 * (upi - up_ip1) \
-                                - dt/h *(f(u_ip1_half) - f(u_i_half))
-                    elif i == len(u_old) - 1:
-                        u_i_half = u_old[i-1] - 0.5 * dt/h * fp_i
-                        u_new[i] = 0.5 * (u_old[i] + u_old[i-1]) + 0.125 * (upi - up_ip1) \
                                 - dt/h *(f(u_ip1_half) - f(u_i_half))
                     else:
                         u_i_half = u_old[i-1] - 0.5 * dt/h * fp_i

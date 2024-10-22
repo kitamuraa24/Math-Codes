@@ -41,40 +41,39 @@ if __name__=="__main__":
     flux_types = {'Linear': linear_u0(N), 
                   'Burgers': burgers_u0(N, x),
                 'Buckley_Leverett': buckleyLeverett_u0(N)}
-    # for flux in flux_types:
-    #     try:
-    #         u0 = flux_types[flux]
-    #     except:
-    #         "Flux type not supported"
-    #     for t in t_end:
-    #         params = [u0, t, CFL, h, xb, flux]
-    #         Solver = RS.Riemann_Solver(params, verbose=False)
-    #         u1 = Solver.LxF()
-    #         u2 = Solver.NT()
-    #         plt.figure(1)
-    #         plt.title(f"{flux} at time {t} s")
-    #         plt.grid(True)
-    #         plt.ylabel("u")
-    #         plt.xlabel("x")
-    #         plt.plot(x, u0, label='Initial')
-    #         plt.plot(x, u1, label = 'LxF')
-    #         plt.plot(x, u2, label='NT')
-    #         plt.legend()
-    #         plt.show()
-    u0 = trial(N)
-    flux = "Linear"
-    t = 1
-    params = [u0, t, CFL, h, xb, flux]
-    Solver = RS.Riemann_Solver(params, verbose=True)
-    u1 = Solver.LxF()
-    u2 = Solver.NT()
-    plt.figure(1)
-    plt.title(f"{flux} at time {t} s")
-    plt.grid(True)
-    plt.ylabel("u")
-    plt.xlabel("x")
-    plt.plot(x, u0, label='Initial')
-    plt.plot(x, u1, label = 'LxF')
-    plt.plot(x, u2, label='NT')
-    plt.legend()
-    plt.show()   
+    for flux in flux_types:
+        try:
+            u0 = flux_types[flux]
+        except:
+            "Flux type not supported"
+        for t in t_end:
+            params = [u0, t, CFL, h, xb, flux]
+            Solver = RS.Riemann_Solver(params, verbose=False)
+            u1 = Solver.LxF()
+            u2 = Solver.NT()
+            plt.figure(1)
+            plt.title(f"{flux} at time {t} s")
+            plt.grid(True)
+            plt.ylabel("u")
+            plt.xlabel("x")
+            plt.plot(x, u1, label = 'LxF')
+            plt.plot(x, u2, label='NT')
+            plt.legend()
+            plt.show()
+    # u0 = trial(N)
+    # flux = "Linear"
+    # t = 1
+    # params = [u0, t, CFL, h, xb, flux]
+    # Solver = RS.Riemann_Solver(params, verbose=True)
+    # u1 = Solver.LxF()
+    # u2 = Solver.NT()
+    # plt.figure(1)
+    # plt.title(f"{flux} at time {t} s")
+    # plt.grid(True)
+    # plt.ylabel("u")
+    # plt.xlabel("x")
+    # plt.plot(x, u0, label='Initial')
+    # plt.plot(x, u1, label = 'LxF')
+    # plt.plot(x, u2, label='NT')
+    # plt.legend()
+    # plt.show()   

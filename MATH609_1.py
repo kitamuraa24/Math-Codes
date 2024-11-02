@@ -7,7 +7,7 @@ plt.rcParams['font.size'] = '14'
 plt.rcParams['figure.figsize'] = [8, 6]
 plt.rcParams['figure.dpi'] = '300'
 
-EPS = 1e-3
+EPS = 1
 
 def thomas_alg(n):
     xlen = 2**n - 1
@@ -72,18 +72,6 @@ def thomas_alg(n):
 #     x = np.linalg.solve(A, f)
 #     return x
     
-if __name__ == "__main__":
-    n = [1, 2, 3, 4, 5, 6, 7, 8]
-    for n_i in n:
-        print(n_i)
-        p_i, u_i = thomas_alg(n_i)
-        plt.scatter(p_i, u_i, label=str(n_i), s=1)
-        plt.legend()
-        plt.grid(True)
-    plt.show()
-    # n = 8
-    # u_i = direct_sol(n)
-    # print(u_i)
 
 
 

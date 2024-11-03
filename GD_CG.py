@@ -33,10 +33,10 @@ class Solver:
     def Conjugate_Gradient(self):
         print('Conjugate Gradient is used.')
         x0 = self.x0
-        r = self.b - np.dot(A, x0)
+        r = self.b - np.dot(self.A, x0)
         d = -r
         for k in range(self.max_iter):
-            z = np.dot(A, d)
+            z = np.dot(self.A, d)
             alpha = np.dot(r, d) / np.dot(d, z)
             x1 = x0 + alpha * d
             r = r - alpha * z

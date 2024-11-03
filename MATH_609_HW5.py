@@ -1,36 +1,73 @@
 import numpy as np
+import matplotlib.pyplot as plt
 import Thomas_Alg as TA
 import GD_CG as GDCG
 
-def pre_TA(a_i, b_i, q_i, n):
-    n = n - 2
-    b = np.repeat(b_i, n)
+def pre_TA(a_i, q_i, n):
     if n - 1 > 0:
         a = np.repeat(a_i, n -1)
         q = np.repeat(q_i, n - 1)
     else: a, q = None, None
-    return a, b, q
+    return a, q
 
-def build_f(a, b, n):
-    if n == 3:
+def build_f(a, b, n, h):
+    if n == 1:
         f = b
     else:
-        f = np.zeros(n-2)
+        f = np.zeros(n)
         f[0] = a
         f[-1] = b
-        for i in range(1, n-1):
-            f[i] = 0 
     return f
 
-def buildA(a_i, b_i, q_i, n):
-    A = np.array(shape=(n-2, n-2))
+def build_A(a_i, b, q_i, n):
+    A = np.zeros((n, n))
+    A[0, 0], A[0, 1] = b[0], q_i
+    A[-1, -1], A[-1, -2] = b[-1], a_i
+    for i in range(1, len(A)-1):
+        A[i, i-1] = a_i
+        A[i, i] = b[i]
+        A[i, i+1] = q_i
+    return A
     
+def calc_b_i(x, n, h):
+    b = np.zeros(n)
+    for i in range(n):
+        b[i] = 2 + h**2*(4*x[i+ 1]**2 + 2)
+    return b
+
+def analytical_soln(x):
+    return np.exp(x**2)
 
 if __name__ == '__main__':
-    p_list = np.arange(1, 15, 1)
+    p_list = np.arange(2, 15, 1)
+    u_left, u_right = 1, np.exp(1)
+    max_iter, rtol = 1000000000000000, 1e-4
     for p in p_list:
         h = 0.5**(p)
         x = np.arange(0, 1 + h, h)
-        n = len(x)
+        n = len(x) - 2
+        b = calc_b_i(x, n, h)
+        a_i, q_i = -1, -1
+        a, q = pre_TA(a_i, q_i, n)
+        f = build_f(u_left, u_right, n, h)
+        A = build_A(a_i, b, q_i, n)
+        u_ta = TA.thomas_alg(a, b, q, f)
+        u0 = np.zeros(n)
+        Sol = GDCG.Solver(u0, A, f, max_iter, rtol)
+        u_gd = Sol.Gradient_Descent()
+        u_cg = Sol.Conjugate_Gradient()
+        u_ta = np.insert(u_ta, 0, u_left)
+        u_ta = np.insert(u_ta, n, u_right)
+        u_gd = np.insert(u_gd, 0, u_left)
+        u_gd = np.insert(u_gd, n, u_right)
+        u_cg = np.insert(u_cg, 0, u_left)
+        u_cg = np.insert(u_cg, n, u_right)
+        plt.scatter(x, u_gd, s = 2, label=f"p={p}")
+    plt.plot(x, analytical_soln(x), label="Analytical solution")
+    plt.legend()
+    plt.grid()
+    plt.show()
+
+
 
         

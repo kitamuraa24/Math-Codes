@@ -33,7 +33,7 @@ def trial(N):
 
 if __name__=="__main__":
     N = 200
-    h = 4/(N-1)
+    h = 4/N
     CFL = 0.3
     t_end = [0.5, 2, 20]
     xb = [-2, 2]
@@ -48,7 +48,7 @@ if __name__=="__main__":
             "Flux type not supported"
         for t in t_end:
             params = [u0, t, CFL, h, xb, flux]
-            Solver = RS.Riemann_Solver(params, verbose=False)
+            Solver = RS.Riemann_Solver(params, verbose=True)
             u1 = Solver.LxF()
             u2 = Solver.NT()
             plt.figure(1)

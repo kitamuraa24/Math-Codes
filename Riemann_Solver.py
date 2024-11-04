@@ -1,4 +1,5 @@
 import numpy as np
+from scipy.optimize import minimize_scalar
 
 class Riemann_Solver:
     def __init__(self, params, verbose=False):
@@ -13,14 +14,26 @@ class Riemann_Solver:
         self.flux_types = {"Linear": self.Linear,
                            "Burgers": self.Burgers,
                            "Buckley_Leverett": self.Buckley_Leverett}
+        self.flux_speed = {"Linear": self.Linear_speed,
+                           "Burgers": self.Burgers_speed,
+                           "Buckley_Leverett": self.Buckley_Leverett_speed}
     def Linear(self, u):
         return u
+    
+    def Linear_speed(self, u):
+        return -1
     
     def Burgers(self, u):
         return u**2/2
     
+    def Burgers_speed(self, u):
+        return -u
+
     def Buckley_Leverett(self, u):
         return u**2/(u**2 + (1-u)**2)
+    
+    def Buckley_Leverett_speed(self, u):
+        return -(2*u-2*u**2)/(2*u**2-2*u+1)**2
     
     def minmod(self, a, b):
         if a >= 0 and b >= 0:
@@ -29,20 +42,28 @@ class Riemann_Solver:
             return max(a, b)
         else:
             return 0
+    
+    def get_dt(self, h):
+        speed = self.flux_speed.get(self.flux)
+        if speed is None:
+            raise ValueError("Flux not supported!")
+        max_speed = minimize_scalar(speed, bounds=[0, 1])
+        dt = self.CFL *h / (-max_speed.fun)
+        return dt
 
     def LxF(self):
         print("Lax-Friedrich scheme is used\n")
         u_old = self.u0
         u_new = np.copy(u_old)
         h = self.h
+        self.dt = self.get_dt(h)
         t, k = 0, 0
          # Select the appropriate flux function
         f = self.flux_types.get(self.flux)
         if f is None:
             raise ValueError("Flux not supported!")
         while t < self.t_end:
-            u_max = np.max(np.abs(u_old))
-            dt = self.CFL * h / u_max 
+            dt = self.dt
             if t + dt > self.t_end:
                 if k % 2 != 0:
                     dt = self.t_end - t
@@ -73,16 +94,17 @@ class Riemann_Solver:
         u_new = np.copy(u_old)
         t, k = 0, 0
         h = self.h
+        self.dt = self.get_dt(h)
         f = self.flux_types.get(self.flux)
         if f is None:
             raise ValueError("Flux not supported!")
         while t < self.t_end:
-            u_max = np.max(np.abs(u_old))
-            dt = self.CFL * h / u_max
+            dt = self.dt
             if t + dt > self.t_end:
                 if k % 2 != 0:
                     dt = self.t_end - t
-                else: dt = 0
+                else: 
+                    dt = 0
             t+=dt
             if k % 2 == 0: #even k
                 for i in range(len(self.u0)):

@@ -35,6 +35,10 @@ def calc_b_i(x, n, h):
         b[i] = 2 + h**2*(4*x[i+ 1]**2 + 2)
     return b
 
+def find_Linf_norm(u, phi):
+    L_inf = np.linalg.norm(u - phi, ord=np.inf)
+    return L_inf
+
 def analytical_soln(x):
     return np.exp(x**2)
 
@@ -51,6 +55,7 @@ if __name__ == '__main__':
         a, q = pre_TA(a_i, q_i, n)
         f = build_f(u_left, u_right, n, h)
         A = build_A(a_i, b, q_i, n)
+        # Solve with LU, GD, and CG
         u_ta = TA.thomas_alg(a, b, q, f)
         u0 = np.zeros(n)
         Sol = GDCG.Solver(u0, A, f, max_iter, rtol)
@@ -62,8 +67,18 @@ if __name__ == '__main__':
         u_gd = np.insert(u_gd, n, u_right)
         u_cg = np.insert(u_cg, 0, u_left)
         u_cg = np.insert(u_cg, n, u_right)
+        phi = analytical_soln(x)
+        # Plotting
         plt.scatter(x, u_gd, s = 2, label=f"p={p}")
-    plt.plot(x, analytical_soln(x), label="Analytical solution")
+        #Post-Process
+        L_inf_ta = find_Linf_norm(u_ta, phi)
+        L_inf_gd = find_Linf_norm(u_gd, phi)
+        L_inf_cg = find_Linf_norm(u_cg, phi)
+        print(f"p = {p}")
+        print(f"L_inf TA: {L_inf_ta:.4e}")
+        print(f"L_inf GD: {L_inf_gd:.4e}")
+        print(f"L_inf CG: {L_inf_cg:.4e}")
+    plt.plot(x, phi, label="Analytical solution")
     plt.legend()
     plt.grid()
     plt.show()

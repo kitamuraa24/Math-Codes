@@ -43,7 +43,7 @@ class Riemann_Solver:
         else:
             return 0
     
-    def get_dt(self, h):
+    def calc_dt(self, h):
         speed = self.flux_speed.get(self.flux)
         if speed is None:
             raise ValueError("Flux not supported!")
@@ -56,7 +56,7 @@ class Riemann_Solver:
         u_old = self.u0
         u_new = np.copy(u_old)
         h = self.h
-        self.dt = self.get_dt(h)
+        self.dt = self.calc_dt(h)
         t, k = 0, 0
          # Select the appropriate flux function
         f = self.flux_types.get(self.flux)
@@ -94,7 +94,7 @@ class Riemann_Solver:
         u_new = np.copy(u_old)
         t, k = 0, 0
         h = self.h
-        self.dt = self.get_dt(h)
+        self.dt = self.calc_dt(h)
         f = self.flux_types.get(self.flux)
         if f is None:
             raise ValueError("Flux not supported!")

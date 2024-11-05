@@ -65,6 +65,7 @@ def set_q(n, g, h):
     q = np.zeros(n-1)
     for i in range(n-1):
         q[i] = g[i+2]/12 - 1/h**2
+    return q
 
 def set_f (n, g, h):
     f = np.zeros(n)
@@ -105,11 +106,11 @@ if __name__ == '__main__':
                 u_gd = Sol.Gradient_Descent()
                 u_cg = Sol.Conjugate_Gradient()
                 u_ta = np.insert(u_ta, 0, u_left)
-                u_ta = np.insert(u_ta, n, u_right)
+                u_ta = np.insert(u_ta, n+1, u_right)
                 u_gd = np.insert(u_gd, 0, u_left)
-                u_gd = np.insert(u_gd, n, u_right)
+                u_gd = np.insert(u_gd, n+1, u_right)
                 u_cg = np.insert(u_cg, 0, u_left)
-                u_cg = np.insert(u_cg, n, u_right)
+                u_cg = np.insert(u_cg, n+1, u_right)
                 phi = analytical_soln(x)
                 # Plotting
                 plt.scatter(x, u_gd, s = 2, label=f"p={p}")
@@ -117,7 +118,7 @@ if __name__ == '__main__':
                 L_inf_ta = calc_Linf_norm(u_ta, phi)
                 L_inf_gd = calc_Linf_norm(u_gd, phi)
                 L_inf_cg = calc_Linf_norm(u_cg, phi)
-                print(f"p = {p}")
+                print(f"h = {h}")
                 print(f"L_inf TA: {L_inf_ta:.4e}")
                 print(f"L_inf GD: {L_inf_gd:.4e}")
                 print(f"L_inf CG: {L_inf_cg:.4e}")
@@ -127,8 +128,11 @@ if __name__ == '__main__':
         plt.show()
     elif problem == 4:
         p_list = np.arange(1, 7, 1)
+        L_inf_list = []
+        h_list = []
         for p in p_list:
             h = (0.5)**(p)
+            h_list.append(h)
             x = np.arange(0, 1 + h, h)
             n = len(x) - 2
             g = set_g(n)
@@ -136,11 +140,25 @@ if __name__ == '__main__':
             b = set_b(n, g, h)
             q = set_q(n, g, h)
             f = set_f(n, g, h)
-            u = TA.thomas_alg(a, b, q, f)
+            if p == 1:
+                u = np.array([(1/h**2-g[0]/12 + np.exp(1)*(1/h**2 - g[-1]/12))/(2/h**2 + 5/6*g[1])])
+            else:
+                u = TA.thomas_alg(a, b, q, f)
             u = np.insert(u, 0, u_left)
-            u = np.insert(u, n, u_right)
+            u = np.insert(u, n+1, u_right)
             phi = analytical_soln(x)
-            L_inf_cg = calc_Linf_norm(u, phi)
+            L_inf = calc_Linf_norm(u, phi)
+            L_inf_list.append(L_inf)
+            plt.plot(x, u, label=f"h = {h}")
+            print(f"h: {h} | L_inf: {L_inf:.4e} | L_inf/h^3: {L_inf/h**3:.4e} | L_inf/h^4: {L_inf/h**4:.4e} | L_inf/h^5: {L_inf/h**5:.4e}")
+        plt.plot(x, phi, label="Analytical Solution")
+        plt.xlabel('x')
+        plt.ylabel('$\phi$')
+        plt.legend()
+        plt.show()
+        plt.loglog(h_list, L_inf_list)
+        plt.title("Log-log plot of the error norm.")
+        plt.show()
 
 
         

@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 import Thomas_Alg as TA
 import GD_CG as GDCG
 
-def find_Linf_norm(u, phi):
+def calc_Linf_norm(u, phi):
     L_inf = np.linalg.norm(u - phi, ord=np.inf)
     return L_inf
 
@@ -44,80 +44,103 @@ def calc_b_i3(x, n, h, problem):
     return b
 #For Problem 4
 def set_g(n):
-    g = np.zeros(n)
-    for i in range(n):
-        g[i] = 4*x[i+1]**2 + 2
+    g = np.zeros(n+2)
+    for i in range(n+2):
+        g[i] = 4*x[i]**2 + 2
     return g
 
 def set_a(n, g, h):
     a = np.zeros(n-1)
-    for i in range(1, n):
-        a[i-1] = g[i]/12 - 1/h**2
+    for i in range(n-1):
+        a[i] = g[i+1]/12 - 1/h**2
     return a
 
 def set_b(n, g, h):
     b = np.zeros(n)
     for i in range(n):
-        b[i] = 2/h**2 + 5/6 * g[i]
+        b[i] = 2/h**2 + 5/6 * g[i+1]
     return b
 
 def set_q(n, g, h):
     q = np.zeros(n-1)
     for i in range(n-1):
-        q[i] = g[i]
+        q[i] = g[i+2]/12 - 1/h**2
+
+def set_f (n, g, h):
+    f = np.zeros(n)
+    f[0] = 1/h**2 - g[0]/12
+    f[-1] = np.exp(1) * (1/h**2 - g[-1]/12)
+    return f
 
 
 if __name__ == '__main__':
-    p_list = np.arange(1, 15, 1)
     u_left, u_right = 1, np.exp(1)
-    max_iter, rtol = 1000000000000000, 1e-4
-    for p in p_list:
-        h = 0.5**(p)
-        x = np.arange(0, 1 + h, h)
-        n = len(x) - 2
-        b = calc_b_i3(x, n, h)
-        a_i, q_i = -1, -1
-        a, q = pre_TA3(a_i, q_i, n)
-        f = build_f3(u_left, u_right, n, h)
-        if p == 1:
-            # Single forward solve
-            u_f = (np.exp(1) + 1) / (h**2*(4*x[1]**2 + 2) + 2)
-            u_f = np.insert(u_f, 0, u_left)
-            u_f = np.insert(u_f, n, u_right)
+    problem = 4
+    if problem == 3:
+        p_list = np.arange(1, 15, 1)
+        max_iter, rtol = 1000000000000000, 1e-4
+        for p in p_list:
+            h = 0.5**(p)
+            x = np.arange(0, 1 + h, h)
+            n = len(x) - 2
+            b = calc_b_i3(x, n, h)
+            a_i, q_i = -1, -1
+            a, q = pre_TA3(a_i, q_i, n)
+            f = build_f3(u_left, u_right, n, h)
+            if p == 1:
+                # Single forward solve
+                u_f = (np.exp(1) + 1) / (h**2*(4*x[1]**2 + 2) + 2)
+                u_f = np.insert(u_f, 0, u_left)
+                u_f = np.insert(u_f, n, u_right)
+                phi = analytical_soln(x)
+                L_inf_f = calc_Linf_norm(u_f, phi)
+                print(f"p = {p}")
+                print(f"L_inf TA: {L_inf_f:.4e}")
+            else:
+                A = build_A3(a_i, b, q_i, n)
+                # Solve with LU, GD, and CG
+                u_ta = TA.thomas_alg(a, b, q, f)
+                u0 = np.zeros(n)
+                Sol = GDCG.Solver(u0, A, f, max_iter, rtol)
+                u_gd = Sol.Gradient_Descent()
+                u_cg = Sol.Conjugate_Gradient()
+                u_ta = np.insert(u_ta, 0, u_left)
+                u_ta = np.insert(u_ta, n, u_right)
+                u_gd = np.insert(u_gd, 0, u_left)
+                u_gd = np.insert(u_gd, n, u_right)
+                u_cg = np.insert(u_cg, 0, u_left)
+                u_cg = np.insert(u_cg, n, u_right)
+                phi = analytical_soln(x)
+                # Plotting
+                plt.scatter(x, u_gd, s = 2, label=f"p={p}")
+                #Post-Process
+                L_inf_ta = calc_Linf_norm(u_ta, phi)
+                L_inf_gd = calc_Linf_norm(u_gd, phi)
+                L_inf_cg = calc_Linf_norm(u_cg, phi)
+                print(f"p = {p}")
+                print(f"L_inf TA: {L_inf_ta:.4e}")
+                print(f"L_inf GD: {L_inf_gd:.4e}")
+                print(f"L_inf CG: {L_inf_cg:.4e}")
+        plt.plot(x, phi, label="Analytical solution")
+        plt.legend()
+        plt.grid()
+        plt.show()
+    elif problem == 4:
+        p_list = np.arange(1, 7, 1)
+        for p in p_list:
+            h = (0.5)**(p)
+            x = np.arange(0, 1 + h, h)
+            n = len(x) - 2
+            g = set_g(n)
+            a = set_a(n, g, h)
+            b = set_b(n, g, h)
+            q = set_q(n, g, h)
+            f = set_f(n, g, h)
+            u = TA.thomas_alg(a, b, q, f)
+            u = np.insert(u, 0, u_left)
+            u = np.insert(u, n, u_right)
             phi = analytical_soln(x)
-            L_inf_f = find_Linf_norm(u_f, phi)
-            print(f"p = {p}")
-            print(f"L_inf TA: {L_inf_f:.4e}")
-        else:
-            A = build_A3(a_i, b, q_i, n)
-            # Solve with LU, GD, and CG
-            u_ta = TA.thomas_alg(a, b, q, f)
-            u0 = np.zeros(n)
-            Sol = GDCG.Solver(u0, A, f, max_iter, rtol)
-            u_gd = Sol.Gradient_Descent()
-            u_cg = Sol.Conjugate_Gradient()
-            u_ta = np.insert(u_ta, 0, u_left)
-            u_ta = np.insert(u_ta, n, u_right)
-            u_gd = np.insert(u_gd, 0, u_left)
-            u_gd = np.insert(u_gd, n, u_right)
-            u_cg = np.insert(u_cg, 0, u_left)
-            u_cg = np.insert(u_cg, n, u_right)
-            phi = analytical_soln(x)
-            # Plotting
-            plt.scatter(x, u_gd, s = 2, label=f"p={p}")
-            #Post-Process
-            L_inf_ta = find_Linf_norm(u_ta, phi)
-            L_inf_gd = find_Linf_norm(u_gd, phi)
-            L_inf_cg = find_Linf_norm(u_cg, phi)
-            print(f"p = {p}")
-            print(f"L_inf TA: {L_inf_ta:.4e}")
-            print(f"L_inf GD: {L_inf_gd:.4e}")
-            print(f"L_inf CG: {L_inf_cg:.4e}")
-    plt.plot(x, phi, label="Analytical solution")
-    plt.legend()
-    plt.grid()
-    plt.show()
-
+            L_inf_cg = calc_Linf_norm(u, phi)
 
 
         

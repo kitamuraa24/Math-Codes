@@ -37,7 +37,8 @@ if __name__=="__main__":
     CFL = 0.3
     t_end = [0.5, 2, 20]
     xb = [-2, 2]
-    x = np.linspace(xb[0] +h/2, xb[1] - h/2, N)
+    x = np.arange(xb[0] + h/2, xb[1] + h/2, h)
+    print(x)
     flux_types = {'Linear': linear_u0(N), 
                   'Burgers': burgers_u0(N, x),
                 'Buckley_Leverett': buckleyLeverett_u0(N)}
@@ -48,7 +49,7 @@ if __name__=="__main__":
             "Flux type not supported"
         for t in t_end:
             params = [u0, t, CFL, h, xb, flux]
-            Solver = RS.Riemann_Solver(params, verbose=True)
+            Solver = RS.Riemann_Solver(params, verbose=False)
             u1 = Solver.LxF()
             u2 = Solver.NT()
             plt.figure(1)
@@ -56,8 +57,8 @@ if __name__=="__main__":
             plt.grid(True)
             plt.ylabel("u")
             plt.xlabel("x")
-            plt.plot(x, u1, label = 'LxF')
-            plt.plot(x, u2, label='NT')
+            plt.scatter(x, u1, label = 'LxF', s=2)
+            plt.scatter(x, u2, label='NT', s=2)
             plt.legend()
             plt.show()
     # u0 = trial(N)

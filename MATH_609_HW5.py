@@ -79,7 +79,7 @@ if __name__ == '__main__':
     problem = 3
     if problem == 3:
         p_list = np.arange(1, 15, 1)
-        max_iter, rtol = 50000, 1e-4
+        max_iter, rtol = 50000, 1e-6
         methods = ["Thomas-Algorithm", "Gradient-Descent", "Conjugate-Gradient"]
         h_list = []
         L_inf_cg_list, L_inf_ta_list, L_inf_gd_list = [], [], []
@@ -103,7 +103,7 @@ if __name__ == '__main__':
                 A = build_A3(a_i, b, q_i, n)
                 # Solve with LU, GD, and CG
                 u_ta = TA.thomas_alg(a, b, q, f)
-                u0 = np.copy(u_ta) + 1e-6
+                u0 = np.copy(u_ta) + 1e-2
                 Sol = GDCG.Solver(u0, A, f, max_iter, rtol, False)
                 u_gd = Sol.Gradient_Descent()
                 u_cg = Sol.Conjugate_Gradient()

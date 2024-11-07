@@ -79,10 +79,11 @@ if __name__ == '__main__':
     problem = 3
     if problem == 3:
         p_list = np.arange(1, 15, 1)
-        max_iter, rtol = 50000, 1e-6
+        max_iter, rtol = 500, 1e-6
         methods = ["Thomas-Algorithm", "Gradient-Descent", "Conjugate-Gradient"]
-        h_list = []
+        h_list, x_list = [], []
         L_inf_cg_list, L_inf_ta_list, L_inf_gd_list = [], [], []
+        u_ta_list, u_gd_list, u_cg_list =[], [], []
         for p in p_list:
             h = 0.5**(p)
             x = np.arange(0, 1 + h, h)
@@ -114,9 +115,12 @@ if __name__ == '__main__':
                 u_cg = np.insert(u_cg, 0, u_left)
                 u_cg = np.insert(u_cg, n+1, u_right)
                 phi = analytical_soln(x)
-                # Plotting
-                plt.scatter(x, u_gd, s = 2, label=f"p={p}")
+                #plt.scatter(x, u_gd, s = 2, label=f"p={p}")
                 #Post-Process
+                u_ta_list.append(u_ta)
+                u_cg_list.append(u_cg)
+                u_gd_list.append(u_gd)
+                x_list.append(x)
                 L_inf_ta = calc_Linf_norm(u_ta, phi)
                 L_inf_gd = calc_Linf_norm(u_gd, phi)
                 L_inf_cg = calc_Linf_norm(u_cg, phi)
@@ -135,14 +139,25 @@ if __name__ == '__main__':
                 L_inf = L_inf_cg_list
             print(m)
             for h in h_list:
-                if h == 1:
-                    print(f"h: {h} | L_inf: {L_inf_f:.4e} | L_inf/h: {L_inf_f/h:.4e} | L_inf/h^2: {L_inf_f/h**2:.4e} | L_inf/h^3: {L_inf_f/h**3:.4e}")
+                if i == 0:
+                    print(f"h: {h:.4e} | L_inf: {L_inf_f:.4e} | L_inf/h: {L_inf_f/h:.4e} | L_inf/h^2: {L_inf_f/h**2:.4e} | L_inf/h^3: {L_inf_f/h**3:.4e}")
                 else:
-                    print(f"h: {h} | L_inf: {L_inf[i]:.4e} | L_inf/h: {L_inf[i]/h:.4e} | L_inf/h^2: {L_inf[i]/h**2:.4e} | L_inf/h^3: {L_inf[i]/h**3:.4e}")
+                    print(f"h: {h:.4e} | L_inf: {L_inf[i]:.4e} | L_inf/h: {L_inf[i]/h:.4e} | L_inf/h^2: {L_inf[i]/h**2:.4e} | L_inf/h^3: {L_inf[i]/h**3:.4e}")
                     i+=1
+        #Plotting
+        for m in range(len(methods)):
+            if m == "Thomas-Algorithm":
+                u_list = u_ta_list
+            elif m == "Gradient-Descent":
+                u_list = u_gd_list
+            else:
+                u_list = u_cg_list
+            plt.figure(m)
+            plt.legend()
+            plt.grid() 
+            for i in range(len(x_list)):
+                plt.plot(x_list[i], u_list[i])
         plt.plot(x, phi, label="Analytical solution")
-        plt.legend()
-        plt.grid()
         plt.show()
     elif problem == 4:
         p_list = np.arange(1, 7, 1)

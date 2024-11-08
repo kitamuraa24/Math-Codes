@@ -79,12 +79,13 @@ if __name__ == '__main__':
     problem = 3
     if problem == 3:
         p_list = np.arange(1, 15, 1)
-        max_iter, rtol = 500, 1e-6
+        max_iter, rtol = 50000, 1e-3
         methods = ["Thomas-Algorithm", "Gradient-Descent", "Conjugate-Gradient"]
         h_list, x_list = [], []
         L_inf_cg_list, L_inf_ta_list, L_inf_gd_list = [], [], []
         u_ta_list, u_gd_list, u_cg_list =[], [], []
         for p in p_list:
+            print(f"p = {p}")
             h = 0.5**(p)
             x = np.arange(0, 1 + h, h)
             n = len(x) - 2
@@ -94,17 +95,18 @@ if __name__ == '__main__':
             f = build_f3(u_left, u_right, n)
             if p == 1:
                 # Single forward solve
-                u_f = (np.exp(1) + 1) / (h**2*(4*x[1]**2 + 2) + 2)
+                u_f = np.array([(np.exp(1) + 1) / (h**2*(4*x[1]**2 + 2) + 2)])
                 u_f = np.insert(u_f, 0, u_left)
-                u_f = np.insert(u_f, n, u_right)
+                u_f = np.insert(u_f, n+1, u_right)
                 phi = analytical_soln(x)
                 L_inf_f = calc_Linf_norm(u_f, phi)
                 h_list.append(h)
+                x_list.append(x)
             else:
                 A = build_A3(a_i, b, q_i, n)
                 # Solve with LU, GD, and CG
                 u_ta = TA.thomas_alg(a, b, q, f)
-                u0 = np.copy(u_ta) + 1e-2
+                u0 = np.zeros(n)
                 Sol = GDCG.Solver(u0, A, f, max_iter, rtol, False)
                 u_gd = Sol.Gradient_Descent()
                 u_cg = Sol.Conjugate_Gradient()
@@ -115,7 +117,6 @@ if __name__ == '__main__':
                 u_cg = np.insert(u_cg, 0, u_left)
                 u_cg = np.insert(u_cg, n+1, u_right)
                 phi = analytical_soln(x)
-                #plt.scatter(x, u_gd, s = 2, label=f"p={p}")
                 #Post-Process
                 u_ta_list.append(u_ta)
                 u_cg_list.append(u_cg)
@@ -128,6 +129,9 @@ if __name__ == '__main__':
                 L_inf_ta_list.append(L_inf_ta)
                 L_inf_cg_list.append(L_inf_cg)
                 L_inf_gd_list.append(L_inf_gd)
+        u_ta_list.insert(0, u_f)
+        u_cg_list.insert(0, u_f)
+        u_gd_list.insert(0, u_f)
         # Tables
         for m in methods:
             i = 0
@@ -145,20 +149,21 @@ if __name__ == '__main__':
                     print(f"h: {h:.4e} | L_inf: {L_inf[i]:.4e} | L_inf/h: {L_inf[i]/h:.4e} | L_inf/h^2: {L_inf[i]/h**2:.4e} | L_inf/h^3: {L_inf[i]/h**3:.4e}")
                     i+=1
         #Plotting
-        for m in range(len(methods)):
+        for k, m in enumerate(methods):
             if m == "Thomas-Algorithm":
                 u_list = u_ta_list
             elif m == "Gradient-Descent":
                 u_list = u_gd_list
             else:
                 u_list = u_cg_list
-            plt.figure(m)
-            plt.legend()
+            plt.figure(k)
+            plt.title(f"{m}")
             plt.grid() 
             for i in range(len(x_list)):
-                plt.plot(x_list[i], u_list[i])
-        plt.plot(x, phi, label="Analytical solution")
-        plt.show()
+                plt.plot(x_list[i], u_list[i], label = f"h={h_list[i]}")
+            plt.plot(x, phi, label="Analytical solution")
+            plt.legend()
+            plt.show()
     elif problem == 4:
         p_list = np.arange(1, 7, 1)
         L_inf_list = []
@@ -183,7 +188,7 @@ if __name__ == '__main__':
             L_inf = calc_Linf_norm(u, phi)
             L_inf_list.append(L_inf)
             plt.plot(x, u, label=f"h = {h}")
-            print(f"h: {h} | L_inf: {L_inf:.4e} | L_inf/h^3: {L_inf/h**3:.4e} | L_inf/h^4: {L_inf/h**4:.4e} | L_inf/h^5: {L_inf/h**5:.4e}")
+            print(f"h: {h:.4e} | L_inf: {L_inf:.4e} | L_inf/h^3: {L_inf/h**3:.4e} | L_inf/h^4: {L_inf/h**4:.4e} | L_inf/h^5: {L_inf/h**5:.4e}")
         plt.plot(x, phi, label="Analytical Solution")
         plt.xlabel('x')
         plt.ylabel('$\phi$')

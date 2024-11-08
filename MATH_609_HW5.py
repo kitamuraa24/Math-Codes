@@ -76,7 +76,7 @@ def set_f (n, g, h):
 
 if __name__ == '__main__':
     u_left, u_right = 1, np.exp(1)
-    problem = 3
+    problem = 4
     if problem == 3:
         p_list = np.arange(1, 15, 1)
         max_iter, rtol = 50000, 1e-3

@@ -47,7 +47,7 @@ class Riemann_Solver:
         speed = self.flux_speed.get(self.flux)
         if speed is None:
             raise ValueError("Flux not supported!")
-        max_speed = minimize_scalar(speed, bounds=[0, 1])
+        max_speed = minimize_scalar(speed, bounds=(0, 1), method='bounded')
         dt = self.CFL *h / (-max_speed.fun)
         return dt
 

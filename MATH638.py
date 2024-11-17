@@ -38,15 +38,22 @@ if __name__=="__main__":
     t_end = [0.5, 2, 20]
     xb = [-2, 2]
     x = np.arange(xb[0] + h/2, xb[1] + h/2, h)
-    print(x)
     flux_types = {'Linear': linear_u0(N), 
                   'Burgers': burgers_u0(N, x),
                 'Buckley_Leverett': buckleyLeverett_u0(N)}
+    # flux_types ={'Burgers': burgers_u0(N, x)}
+    # flux_types = {'Buckley_Leverett': buckleyLeverett_u0(N)}
     for flux in flux_types:
         try:
             u0 = flux_types[flux]
         except:
             "Flux type not supported"
+        plt.figure(2)
+        plt.title(f"{flux} at time 0 s")
+        plt.grid(True)
+        plt.ylabel('u')
+        plt.xlabel('x')
+        plt.scatter(x, u0, label='Initial field', s=2)
         for t in t_end:
             params = [u0, t, CFL, h, xb, flux]
             Solver = RS.Riemann_Solver(params, verbose=False)

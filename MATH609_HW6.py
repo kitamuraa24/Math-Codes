@@ -1,5 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
+from matplotlib import cm
+import Jacobi_GaussSeidel as JGS
 
 def buildA_b(h):
     """
@@ -27,8 +29,8 @@ def buildA_b(h):
     b_tile = np.zeros(n)
     b_tile[-1] = -1/h**2
     b = np.tile(b_tile, n)
-    x = np.arange(0, 1+h, h)  
-    y = np.arange(0, 1+h, h)  
+    x = np.arange(0-h/2, 1+3*h/2, h)  
+    y = np.arange(0-h/2, 1+3*h/2, h)  
    
     return A, b, x, y
 
@@ -44,21 +46,33 @@ def add_bc(n, W):
     return W
 
 if __name__ == "__main__":
-    h = 1/4
-    n = int(1/h - 1)
-    xtol = 1e-2
-    A, b, x, y = buildA_b(h)
-    w = np.linalg.solve(A, b)
-    X, Y = np.meshgrid(x, y)      # Create the 2D grid
-    W = w.reshape((n, n))
-    W = add_bc(n, W)
-    print(W)
-    plt.figure(figsize=(8, 6))
-    contour = plt.contourf(X, Y, W, levels=20, cmap='viridis')  # Filled contour plot
-    plt.colorbar(contour, label="Temperature (Φ)")
-    plt.title("Contour Plot of Temperature Distribution")
-    plt.xlabel("x")
-    plt.ylabel("y")
-    plt.axis("equal")  # Keep aspect ratio square
-    plt.show()
-    
+    h_list = [1/4, 1/8, 1/16]
+    for h in h_list:
+        n = int(1/h - 1)
+        xtol = 1e-2
+        A, b, x, y = buildA_b(h)
+        rho_Bj = 1 - 0.5 * np.pi**2 * h**2
+        omega = 2/(1 + np.sqrt(1 - rho_Bj**2))
+        Solver = JGS.Solver(A, b, 25, xtol, w=omega)
+        method_list = {"J": Solver.Jacobi(),
+                    "GS": Solver.Gauss_Seidel(),
+                    "SoR": Solver.SoR()}
+        # method_list = {"J": Solver.Jacobi()}
+        for m in method_list:
+        # Iterative Method to solve
+            w = method_list[m]
+            X, Y = np.meshgrid(x, y)      # Create the 2D grid
+            W = w.reshape((n, n), order='F') # iterates j first, then i
+            W = add_bc(n, W)
+            plt.figure(figsize=(8, 6))
+            pc = plt.pcolormesh(X, Y, W, cmap=cm.coolwarm, shading='flat')  # Discrete cells
+            plt.colorbar(pc, label="Temperature (u)")
+            plt.title(f"Plot of Temperature Distribution (Method: {m})")
+            plt.xlabel("x")
+            plt.ylabel("y")
+            plt.show()
+    # Segment of code to handle GD and CG
+    for h in h_list:
+        n = int(1/h - 1)
+        xtol = 1e-2
+        A, b, x, y = buildA_b(h)

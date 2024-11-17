@@ -2,7 +2,7 @@ import numpy as np
 
 class Solver:
     # TO DO: Replace error with residual, and add convergence tol for actual use
-    def __init__(self, A, b, max_iter, xtol, verbose=False, w=None):
+    def __init__(self, A, b, max_iter, xtol, verbose=False, w=None, order=np.inf):
         self.A = A
         self.b = b
         self.max_iter = max_iter + 1
@@ -11,6 +11,7 @@ class Solver:
         self.verbose = verbose
         self.x = np.array([1, 1, 1])
         self.w = w
+        self.order = order
 
     def Jacobi(self):
         print("\nJacobi Method is used.")
@@ -24,18 +25,20 @@ class Solver:
                     if j != i:
                         sum += self.A[i, j]*x_k[j]
                 x_kp1[i] = 1/self.A[i,i] * (self.b[i] - sum)
-                r_k = np.linalg.norm(self.b - np.dot(self.A, x_kp1))
+                r_k = np.linalg.norm(self.b - np.dot(self.A, x_kp1), ord=self.order)
                 if k == 1:
-                    r_k_old = 1
+                    r_k_old = np.copy(r_k)
                 r_k_rel = r_k / r_k_old
-                r_k_old = np.copy(r_k)
+                #r_k_old = np.copy(r_k)
                 if self.verbose == True:
                     print(f"Iteration: {k}, x: {x_kp1}, r_k: {r_k}, rel_r: {r_k_rel}")
             # Set x_k+1 to x_k for next iteration 
             x_k = np.copy(x_kp1)
-            if r_k < self.xtol:
-                print(f"Total Iterations: {k}")
-                break   
+            if r_k_rel < self.xtol:
+                print(f"Total Iterations: {k} \nr_k_rel: {r_k_rel}")
+                break 
+            elif k == self.max_iter - 1:
+                print("Max Iterations Hit!")  
         return x_k
     
     def Gauss_Seidel(self):
@@ -47,17 +50,19 @@ class Solver:
                 sum1 = np.dot(self.A[i, :i], x_kp1[:i])
                 sum2 = np.dot(self.A[i, i+1:], x_k[i+1:])
                 x_kp1[i] = 1/self.A[i, i] * (self.b[i] - sum1 - sum2)
-                r_k = np.linalg.norm(self.b - np.dot(self.A, x_kp1))
+                r_k = np.linalg.norm(self.b - np.dot(self.A, x_kp1), ord=self.order)
                 if k == 1:
-                    r_k_old = 1
+                    r_k_old = np.copy(r_k)
                 r_k_rel = r_k / r_k_old
-                r_k_old = np.copy(r_k)
+                # r_k_old = np.copy(r_k)
                 if self.verbose == True:
-                    print(f"Iteration: {k}, x: {x_kp1}, r_max: {r_k}, rel_r: {r_k_rel}")
+                    print(f"Iteration: {k}, x: {x_kp1}, r_k: {r_k}, rel_r: {r_k_rel}")
             x_k = np.copy(x_kp1)
-            if r_k < self.xtol:
-                print(f"Total Iterations: {k}")
+            if r_k_rel < self.xtol:
+                print(f"Total Iterations: {k}\nr_k_rel: {r_k_rel}")
                 break
+            elif k == self.max_iter - 1:
+                print("Max Iterations Hit!")
         return x_k
     
     def SoR(self):
@@ -70,27 +75,32 @@ class Solver:
                     if j != i:
                         s += self.A[i, j] * x_k[j]
                 x_k[i] = (1 - self.w) * x_k[i] + (self.w/self.A[i,i]) * (self.b[i] - s)
-            if self.verbose == True:
-             ek_max = np.max(np.abs(self.x - x_k))
+            r_k = np.linalg.norm(self.A @ x_k - self.b, ord = self.order)
             if k == 1:
-                ek_max_old = 1
-            ek_max_rel = ek_max / ek_max_old
-            ek_max_old = np.copy(ek_max)
-            print(f"Iteration: {k}, x: {x_k}, e_max: {ek_max}, rel_e: {ek_max_rel}")
+                r_k_old = np.copy(r_k)
+            r_k_rel = r_k / r_k_old
+            # r_k_old = np.copy(r_k)
+            if self.verbose == True:
+                print(f"Iteration: {k}, x: {x_k}, r_k: {r_k}, rel_r: {r_k_rel}")
+            if r_k_rel < self.xtol:
+                print(f"Total Iterations: {k}\nr_k_rel: {r_k_rel}")
+                break
+            elif k == self.max_iter -1:
+                print("Max Iterations Hit!")
         return x_k       
 
 
-if __name__ == "__main__":
-    A = np.array([[3, 1, 0],
-                  [1, 3, 1],
-                  [0, 1, 3]])            
-    b = np.array([4, 5, 4])
-    max_iter = 10
-    w = 9 - 3*np.sqrt(7)
-    solve = Solver(A, b, max_iter, verbose=True, w=w, xtol=1e-6)
-    solve.Jacobi()
-    solve.Gauss_Seidel()
-    solve.SoR()
+# if __name__ == "__main__":
+#     A = np.array([[3, 1, 0],
+#                   [1, 3, 1],
+#                   [0, 1, 3]])            
+#     b = np.array([4, 5, 4])
+#     max_iter = 10
+#     w = 9 - 3*np.sqrt(7)
+#     solve = Solver(A, b, max_iter, verbose=True, w=w, xtol=1e-6)
+#     solve.Jacobi()
+#     solve.Gauss_Seidel()
+#     solve.SoR()
 
 #Problem 3
     # A = np.array([[4, -1, 0, -1, 0, 0, 0, 0, 0],

@@ -2,10 +2,11 @@ import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib import cm
 import Jacobi_GaussSeidel as JGS
+import GD_CG as GDCG
 
 def buildA_b(h):
     """
-    Algorithm corresponds to FDM 2nd order, with Dirichlet BC
+    Algorithm corresponds to Laplace FDM 2nd order, with Dirichlet BC 
     """
     n = int(1/h - 1)  # Number of interior points per axis
     N = n ** 2
@@ -48,31 +49,53 @@ def add_bc(n, W):
 if __name__ == "__main__":
     h_list = [1/4, 1/8, 1/16]
     for h in h_list:
+        print(f"h: {h}\n")
         n = int(1/h - 1)
         xtol = 1e-2
         A, b, x, y = buildA_b(h)
         rho_Bj = 1 - 0.5 * np.pi**2 * h**2
         omega = 2/(1 + np.sqrt(1 - rho_Bj**2))
-        Solver = JGS.Solver(A, b, 25, xtol, w=omega)
+        Solver = JGS.Solver(A, b, 500, xtol, w=omega)
         method_list = {"J": Solver.Jacobi(),
                     "GS": Solver.Gauss_Seidel(),
                     "SoR": Solver.SoR()}
-        # method_list = {"J": Solver.Jacobi()}
+        rho_list = {"J": 1 - 0.5 *np.pi**2*h**2,
+                    "GS": 1 - np.pi**2*h**2,
+                    "SoR": 1 - 2*np.pi*h}
         for m in method_list:
         # Iterative Method to solve
             w = method_list[m]
+            rho = rho_list[m]
+            print(f"Spectral radius for matrix {m}: {rho:.4e}")
             X, Y = np.meshgrid(x, y)      # Create the 2D grid
             W = w.reshape((n, n), order='F') # iterates j first, then i
             W = add_bc(n, W)
             plt.figure(figsize=(8, 6))
             pc = plt.pcolormesh(X, Y, W, cmap=cm.coolwarm, shading='flat')  # Discrete cells
             plt.colorbar(pc, label="Temperature (u)")
-            plt.title(f"Plot of Temperature Distribution (Method: {m})")
+            plt.title(f"Plot of Temperature Distribution (Method: {m}, h: {h})")
             plt.xlabel("x")
             plt.ylabel("y")
             plt.show()
     # Segment of code to handle GD and CG
     for h in h_list:
+        print(f"h: {h}\n")
         n = int(1/h - 1)
         xtol = 1e-2
         A, b, x, y = buildA_b(h)
+        w0 = np.zeros(n**2)
+        Solver = GDCG.Solver(w0, A, b, 500, xtol)
+        methods_list = {"GD": Solver.Gradient_Descent(),
+                        "CG": Solver.Conjugate_Gradient()}
+        for m in methods_list:
+            w = methods_list[m]
+            X, Y = np.meshgrid(x, y)      # Create the 2D grid
+            W = w.reshape((n, n), order='F') # iterates j first, then i
+            W = add_bc(n, W)
+            plt.figure(figsize=(8, 6))
+            pc = plt.pcolormesh(X, Y, W, cmap=cm.coolwarm, shading='flat')  # Discrete cells
+            plt.colorbar(pc, label="Temperature (u)")
+            plt.title(f"Plot of Temperature Distribution (Method: {m}, h: {h})")
+            plt.xlabel("x")
+            plt.ylabel("y")
+            plt.show()

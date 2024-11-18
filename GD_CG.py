@@ -17,11 +17,13 @@ class Solver:
             alpha = np.dot(r, r) / (r.T @ self.A @ r)
             x1 = x0 + alpha * r
             r = self.b - self.A @ x1
-            conv = np.linalg.norm(r)
+            if k == 0:
+                r_0 = np.linalg.norm(np.copy(r), ord=np.inf) #L_inf Norm
+            conv = np.linalg.norm(r, ord=np.inf)/r_0
             if self.verbose == True:
                 print(f"Iteration {k}: r= {conv:.5f}, x= {x1}")
             if conv < self.rtol:
-                print(f"Total Iterations: {k}")
+                print(f"Total Iterations: {k}\nr_rel: {conv}")
                 x0 = x1
                 break
             elif k == self.max_iter-1:
@@ -40,12 +42,14 @@ class Solver:
             alpha = np.dot(r, d) / np.dot(d, z)
             x1 = x0 + alpha * d
             r = r - alpha * z
-            conv = np.linalg.norm(r)
+            if k == 0:
+                r_0 = np.linalg.norm(np.copy(r), ord=np.inf)
+            conv = np.linalg.norm(r, ord=np.inf)/r_0
             if self.verbose == True:
                 print(f"Iteration {k}: r= {conv}, x= {x1}")
             if conv < self.rtol:
                 x0 = x1
-                print(f"Total Iterations: {k}")
+                print(f"Total Iterations: {k}\nr_rel: {conv}")
                 break
             elif k == self.max_iter-1:
                 print("Max Iterations Reached.")

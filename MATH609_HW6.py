@@ -59,9 +59,9 @@ if __name__ == "__main__":
         method_list = {"J": Solver.Jacobi(),
                     "GS": Solver.Gauss_Seidel(),
                     "SoR": Solver.SoR()}
-        rho_list = {"J": 1 - 0.5 *np.pi**2*h**2,
-                    "GS": 1 - np.pi**2*h**2,
-                    "SoR": 1 - 2*np.pi*h}
+        rho_list = {"J": np.cos(np.pi*h),
+                    "GS": np.cos(np.pi*h)**2,
+                    "SoR": 2/(1 + np.sqrt(1-np.cos(np.pi*h)**2))-1}
         for m in method_list:
         # Iterative Method to solve
             w = method_list[m]
@@ -73,7 +73,7 @@ if __name__ == "__main__":
             plt.figure(figsize=(8, 6))
             pc = plt.pcolormesh(X, Y, W, cmap=cm.coolwarm, shading='flat')  # Discrete cells
             plt.colorbar(pc, label="Temperature (u)")
-            plt.title(f"Plot of Temperature Distribution (Method: {m}, h: {h})")
+            plt.title(f"Plot of w Distribution (Method: {m}, h: {h})")
             plt.xlabel("x")
             plt.ylabel("y")
             plt.show()
@@ -95,7 +95,7 @@ if __name__ == "__main__":
             plt.figure(figsize=(8, 6))
             pc = plt.pcolormesh(X, Y, W, cmap=cm.coolwarm, shading='flat')  # Discrete cells
             plt.colorbar(pc, label="Temperature (u)")
-            plt.title(f"Plot of Temperature Distribution (Method: {m}, h: {h})")
+            plt.title(f"Plot of w Distribution (Method: {m}, h: {h})")
             plt.xlabel("x")
             plt.ylabel("y")
             plt.show()

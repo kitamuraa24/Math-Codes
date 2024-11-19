@@ -72,8 +72,8 @@ if __name__ == "__main__":
             W = add_bc(n, W)
             plt.figure(figsize=(8, 6))
             pc = plt.pcolormesh(X, Y, W, cmap=cm.coolwarm, shading='flat')  # Discrete cells
-            plt.colorbar(pc, label="Temperature (u)")
-            plt.title(f"Plot of w Distribution (Method: {m}, h: {h})")
+            plt.colorbar(pc, label="u")
+            plt.title(f"Plot of U Distribution (Method: {m}, h: {h})")
             plt.xlabel("x")
             plt.ylabel("y")
             plt.show()
@@ -94,8 +94,8 @@ if __name__ == "__main__":
             W = add_bc(n, W)
             plt.figure(figsize=(8, 6))
             pc = plt.pcolormesh(X, Y, W, cmap=cm.coolwarm, shading='flat')  # Discrete cells
-            plt.colorbar(pc, label="Temperature (u)")
-            plt.title(f"Plot of w Distribution (Method: {m}, h: {h})")
+            plt.colorbar(pc, label="u")
+            plt.title(f"Plot of U Distribution (Method: {m}, h: {h})")
             plt.xlabel("x")
             plt.ylabel("y")
             plt.show()

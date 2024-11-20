@@ -26,15 +26,17 @@ class Solver:
                         sum += self.A[i, j]*x_k[j]
                 x_kp1[i] = 1/self.A[i,i] * (self.b[i] - sum)
                 r_k = np.linalg.norm(self.b - np.dot(self.A, x_kp1), ord=self.order)
-                if k == 1:
-                    r_k_old = np.copy(r_k)
-                r_k_rel = r_k / r_k_old
-                #r_k_old = np.copy(r_k)
-                if self.verbose == True:
-                    print(f"Iteration: {k}, x: {x_kp1}, r_k: {r_k}, rel_r: {r_k_rel}")
+            if k == 1:
+                r_k_0 = np.copy(r_k)
+                r_k_old = np.copy(r_k_0)
+            r_k_rel = r_k / r_k_old
+            r_k_old = np.copy(r_k_0)
+            conv = r_k/r_k_0
+            if self.verbose == True:
+                print(f"Iteration: {k}, x: {x_kp1}, r_k: {r_k}, rel_r: {r_k_rel}")
             # Set x_k+1 to x_k for next iteration 
             x_k = np.copy(x_kp1)
-            if r_k_rel < self.xtol:
+            if conv < self.xtol:
                 print(f"Total Iterations: {k} \nr_k_rel: {r_k_rel}")
                 break 
             elif k == self.max_iter - 1:
@@ -50,15 +52,17 @@ class Solver:
                 sum1 = np.dot(self.A[i, :i], x_kp1[:i])
                 sum2 = np.dot(self.A[i, i+1:], x_k[i+1:])
                 x_kp1[i] = 1/self.A[i, i] * (self.b[i] - sum1 - sum2)
-                r_k = np.linalg.norm(self.b - np.dot(self.A, x_kp1), ord=self.order)
-                if k == 1:
-                    r_k_old = np.copy(r_k)
-                r_k_rel = r_k / r_k_old
-                # r_k_old = np.copy(r_k)
-                if self.verbose == True:
-                    print(f"Iteration: {k}, x: {x_kp1}, r_k: {r_k}, rel_r: {r_k_rel}")
+            r_k = np.linalg.norm(self.b - np.dot(self.A, x_kp1), ord=self.order)
+            if k == 1:
+                r_k_0 = np.copy(r_k)
+                r_k_old = np.copy(r_k_0)
+            r_k_rel = r_k / r_k_old
+            r_k_old = np.copy(r_k_0)
+            conv = r_k/r_k_0
+            if self.verbose == True:
+                print(f"Iteration: {k}, x: {x_kp1}, r_k: {r_k}, rel_r: {r_k_rel}")
             x_k = np.copy(x_kp1)
-            if r_k_rel < self.xtol:
+            if conv < self.xtol:
                 print(f"Total Iterations: {k}\nr_k_rel: {r_k_rel}")
                 break
             elif k == self.max_iter - 1:
@@ -77,13 +81,16 @@ class Solver:
                 x_k[i] = (1 - self.w) * x_k[i] + (self.w/self.A[i,i]) * (self.b[i] - s)
             r_k = np.linalg.norm(self.A @ x_k - self.b, ord = self.order)
             if k == 1:
-                r_k_old = np.copy(r_k)
+                r_k_0 = np.copy(r_k)
+                r_k_old = np.copy(r_k_0)
             r_k_rel = r_k / r_k_old
+            r_k_old = np.copy(r_k_0)
+            conv = r_k/r_k_0
             # r_k_old = np.copy(r_k)
             if self.verbose == True:
                 print(f"Iteration: {k}, x: {x_k}, r_k: {r_k}, rel_r: {r_k_rel}")
-            if r_k_rel < self.xtol:
-                print(f"Total Iterations: {k}\nr_k_rel: {r_k_rel}")
+            if conv < self.xtol:
+                print(f"Total Iterations: {k}\nrel_r: {r_k_rel}")
                 break
             elif k == self.max_iter -1:
                 print("Max Iterations Hit!")
